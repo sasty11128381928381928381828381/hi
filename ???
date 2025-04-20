@@ -1,0 +1,169 @@
+-- // Gloudy Hub - Full Script with Fluent UI //
+-- Made with 💀 by your boy + ChatGPT
+
+--// Services & Lib
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+--// Load Fluent UI
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Gloudy Hub",
+    SubTitle = "The Strongest Battlegrounds",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.RightControl
+})
+
+--// Tabs
+local CombatTab = Window:AddTab({ Title = "Combat", Icon = "swords" })
+local BuffsTab = Window:AddTab({ Title = "Buffs", Icon = "zap" })
+local VisualTab = Window:AddTab({ Title = "Visuals", Icon = "eye" })
+local TeleportTab = Window:AddTab({ Title = "Teleports", Icon = "map" })
+local UtilityTab = Window:AddTab({ Title = "Utility", Icon = "settings" })
+
+--// Auto Features (Placeholders for now)
+CombatTab:AddToggle({ Title = "Auto Combo", Default = false, Callback = function(val) end })
+CombatTab:AddToggle({ Title = "Auto Block", Default = false, Callback = function(val) end })
+CombatTab:AddToggle({ Title = "Auto Hit", Default = false, Callback = function(val) end })
+CombatTab:AddToggle({ Title = "Auto Counter", Default = false, Callback = function(val) end })
+
+--// Combat Buffs
+local WalkSpeed = 16
+local JumpPower = 50
+local InfiniteJump = false
+local FlyEnabled = false
+local NoclipEnabled = false
+
+BuffsTab:AddSlider({
+    Title = "WalkSpeed",
+    Min = 16,
+    Max = 200,
+    Default = 16,
+    Callback = function(val)
+        WalkSpeed = val
+        Humanoid.WalkSpeed = val
+    end
+})
+
+BuffsTab:AddSlider({
+    Title = "JumpPower",
+    Min = 50,
+    Max = 200,
+    Default = 50,
+    Callback = function(val)
+        JumpPower = val
+        Humanoid.JumpPower = val
+    end
+})
+
+BuffsTab:AddToggle({
+    Title = "Infinite Jump",
+    Default = false,
+    Callback = function(val)
+        InfiniteJump = val
+    end
+})
+
+BuffsTab:AddToggle({
+    Title = "Fly",
+    Default = false,
+    Callback = function(val)
+        FlyEnabled = val
+    end
+})
+
+BuffsTab:AddToggle({
+    Title = "Noclip",
+    Default = false,
+    Callback = function(val)
+        NoclipEnabled = val
+    end
+})
+
+-- Anti Stun / Ragdoll
+spawn(function()
+    while task.wait() do
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char:FindFirstChild("Stunned") then char.Stunned:Destroy() end
+            if char:FindFirstChild("Ragdolled") then char.Ragdolled:Destroy() end
+        end)
+    end
+end)
+
+-- No Cooldown
+spawn(function()
+    while task.wait() do
+        for _, v in pairs(getgc(true)) do
+            if typeof(v) == "table" and rawget(v, "Cooldown") then
+                v.Cooldown = 0
+            end
+        end
+    end
+end)
+
+-- Infinite Stamina
+spawn(function()
+    while task.wait(0.2) do
+        local stamina = LocalPlayer:FindFirstChild("Stamina") or Character:FindFirstChild("Stamina")
+        if stamina then
+            stamina.Value = 100
+        end
+    end
+end)
+
+-- Q Dash Buff
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if input.KeyCode == Enum.KeyCode.Q and not gpe then
+        local hrp = Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.Velocity = hrp.CFrame.LookVector * 80
+        end
+    end
+end)
+
+-- Infinite Jump Logic
+UserInputService.JumpRequest:Connect(function()
+    if InfiniteJump and Humanoid then
+        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- Noclip Logic
+RunService.Stepped:Connect(function()
+    if NoclipEnabled then
+        for _, v in pairs(Character:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide then
+                v.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- Fly Logic
+RunService.RenderStepped:Connect(function()
+    if FlyEnabled then
+        local hrp = Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.Velocity = Vector3.new(0, 50, 0)
+        end
+    end
+end)
+
+--// Coming Soon (ESP, Teleports, Utility, etc.)
+VisualTab:AddParagraph({ Title = "ESP", Content = "Coming soon..." })
+TeleportTab:AddParagraph({ Title = "Teleport Options", Content = "Player / Arena teleport yakında." })
+UtilityTab:AddParagraph({ Title = "Extras", Content = "FPS Boost, Anti AFK, Save System vs. yolda." })
+
+--// Notification
+Fluent:Notify({ Title = "Gloudy Hub", Content = "Yüklendi!", Duration = 6 })
