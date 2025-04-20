@@ -1,0 +1,14 @@
+-- Auto Hit Bypass Fonksiyonu
+local function AutoHit()
+    -- VirtualInputManager kullanarak tıklama simüle et
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+
+    -- Sonsuz hit döngüsü (aktifse sürekli vuruş)
+    while task.wait(0.1) do
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)  -- Mouse Down
+        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0) -- Mouse Up
+    end
+end
+
+-- Bu fonksiyonu aktif etmek için:
+AutoHit()
