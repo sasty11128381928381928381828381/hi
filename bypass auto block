@@ -1,0 +1,39 @@
+-- Auto Block Fonksiyonu
+local function AutoBlock()
+    -- VirtualInputManager ile F tuşuna basmayı simüle et
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    local humanoid = player.Character:WaitForChild("Humanoid")
+
+    -- Saldırıya uğradığında blok başlasın
+    local blocking = false
+
+    -- Sürekli olarak oyuncu hasar alıyor mu kontrol et
+    humanoid.HealthChanged:Connect(function(health)
+        -- Eğer oyuncunun canı azalmışsa, bir saldırı alındığını varsayalım
+        if health < humanoid.Health then
+            -- Eğer hasar alındıysa, blok başlat
+            if not blocking then
+                blocking = true
+                -- F tuşuna bas
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)  -- Key Down
+                wait(0.1)  -- 0.1 saniye boyunca blok basılı tutma
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game) -- Key Up
+            end
+        else
+            -- Sağlık arttığında blok kaldırılır
+            blocking = false
+        end
+    end)
+
+    -- Çok fazla vuruluyorsa, sürekli F tuşunu basılı tutacak
+    while task.wait(0.1) do
+        if humanoid.Health < humanoid.MaxHealth * 0.3 then  -- Sağlık %30'un altına düştüğünde
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)  -- Key Down (blok sürekli basılı)
+        else
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game) -- Key Up
+        end
+    end
+end
+
+-- Bu fonksiyonu çalıştırmak için:
+AutoBlock()
