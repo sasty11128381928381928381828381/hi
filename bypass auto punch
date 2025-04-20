@@ -1,0 +1,41 @@
+_G.punchRange = 3 -- GUI'den slider ile değiştirilebilir
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Mouse sol tık simülasyonu
+local function mouse1click()
+    local vu = game:GetService("VirtualUser")
+    vu:Button1Down(Vector2.new(0, 0))
+    task.wait()
+    vu:Button1Up(Vector2.new(0, 0))
+end
+
+-- Ön, sağ, sol kontrolü
+local function isInFrontOrSides(targetPos, playerPos, playerLookVector)
+    local relative = (targetPos - playerPos).Unit
+    local dot = playerLookVector:Dot(relative)
+    return dot > 0.2
+end
+
+-- Auto Punch
+RunService.Heartbeat:Connect(function()
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+
+    local root = character.HumanoidRootPart
+    local look = root.CFrame.LookVector
+
+    for _, enemy in pairs(Players:GetPlayers()) do
+        if enemy ~= LocalPlayer and enemy.Character and enemy.Character:FindFirstChild("HumanoidRootPart") then
+            local enemyRoot = enemy.Character.HumanoidRootPart
+            local distance = (enemyRoot.Position - root.Position).Magnitude
+
+            if distance <= (_G.punchRange or 3) and isInFrontOrSides(enemyRoot.Position, root.Position, look) then
+                mouse1click()
+                task.wait(0.1)
+            end
+        end
+    end
+end)
